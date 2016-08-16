@@ -20,8 +20,8 @@ print "P(Test group is better that Contrl group) = %s%%" % (
 
 # Bayesian AB test with small numbers
 
-base = np.loadtxt('base.data')
-variant = np.loadtxt('variant.data')
+base = np.loadtxt('data/base.data')
+variant = np.loadtxt('data/variant.data')
 
 analyze_mcmc(base, variant)
 

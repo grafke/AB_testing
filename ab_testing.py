@@ -7,7 +7,7 @@ from scipy.stats import norm, beta
 
 
 def visualize(normal_base_samples, normal_variant_samples, normal_delta_samples, beta_base_samples,
-              beta_variant_samples, beta_delta_samples, output='output.png'):
+              beta_variant_samples, beta_delta_samples, output='plots/output.png'):
     fig = plt.figure(figsize=(10, 10))
 
     ax = fig.add_subplot(321)
@@ -64,7 +64,7 @@ def visualize(normal_base_samples, normal_variant_samples, normal_delta_samples,
     plt.savefig(output)
 
 
-def analyze_mcmc(base=[], variant=[], output='output.png', num_samples=30000):
+def analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=30000):
     """
     Bayesian AB test using MCMC
     Slow with big numbers
@@ -199,7 +199,7 @@ def analyze_sampl(base_pos, base_neg, variant_pos, variant_neg, N=1e6):
     return np.average(base_sim < variant_sim)
 
 
-def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='output_joint.png', minp=0, maxp=1):
+def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='plots/output_joint.png', minp=0, maxp=1):
     """
     Bayesian AB test
     Read more: https://en.wikipedia.org/wiki/Joint_probability_distribution
