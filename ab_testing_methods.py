@@ -94,8 +94,9 @@ def analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=300
         obs_A = pm.Bernoulli("obs_A_n", p_A_n, observed=base)
         obs_B = pm.Bernoulli("obs_B_n", p_B_n, observed=variant)
 
+        start = pm.find_MAP()
         step = pm.Metropolis([p_A_n, p_B_n, delta, obs_A, obs_B])
-        trace = pm.sample(num_samples, step)
+        trace = pm.sample(num_samples, step, start=start)
 
         normal_base_data = trace.get_values('Uniform Base')
         normal_variant_data = trace.get_values('Uniform Variant')
@@ -114,8 +115,9 @@ def analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=300
         obs_A_b = pm.Bernoulli("obs_A_b", p_A_b, observed=base)
         obs_B_b = pm.Bernoulli("obs_B_b", p_B_b, observed=variant)
 
+        start = pm.find_MAP()
         step = pm.Metropolis([p_A_b, p_B_b, beta_delta, obs_A_b, obs_B_b])
-        trace = pm.sample(num_samples, step)
+        trace = pm.sample(num_samples, step, start=start)
 
         beta_base_data = trace.get_values('Beta Base')
         beta_variant_data = trace.get_values('Beta Variant')
