@@ -6,3 +6,6 @@ Bayesian A/B testing
 * Approximate closed form solution
 
 G test
+
+Which method to choose depends on a particular problem. Some problems do not have closed form solutions,
+some have strict time|computational constraints, some require high precision.
