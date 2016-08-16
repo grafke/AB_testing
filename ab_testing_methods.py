@@ -203,6 +203,7 @@ def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='
     """
     Bayesian AB test
     Read more: https://en.wikipedia.org/wiki/Joint_probability_distribution
+    http://cdn2.hubspot.net/hubfs/310840/VWO_SmartStats_technical_whitepaper.pdf
 
     Adjust N, minp, maxp.
 
