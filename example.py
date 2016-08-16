@@ -9,13 +9,13 @@ variant_neg = 13971736
 
 # Bayesian AB test with big numbers
 
-print "P(Test group is better that Contrl group) = %s%%" % (
+print "P(Test group is better that Control group) = %s%%" % (
 100 * analyze_closed_form(base_pos, base_neg, variant_pos, variant_neg))
 
-print "P(Test group is better that Contrl group) = %s%%" % (
+print "P(Test group is better that Control group) = %s%%" % (
 100 * analyze_approx(base_pos, base_neg, variant_pos, variant_neg))
 
-print "P(Test group is better that Contrl group) = %s%%" % (
+print "P(Test group is better that Control group) = %s%%" % (
 100 * analyze_joint(base_pos, base_neg, variant_pos, variant_neg, minp=.158, maxp=.16))
 
 # Bayesian AB test with small numbers
