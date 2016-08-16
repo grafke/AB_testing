@@ -1,6 +1,6 @@
 from __future__ import division
 import numpy as np
-from ab_testing import g_test, g_to_p, analyze_mcmc, analyze_closed_form, analyze_approx, analyze_joint
+from ab_testing_methods import g_test, g_to_p, analyze_mcmc, analyze_closed_form, analyze_approx, analyze_joint
 
 base_pos = 2643146
 base_neg = 13980139
