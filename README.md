@@ -5,9 +5,9 @@ Bayesian A/B testing
 * Numerical integrating over joint distribution (see plots/output_joint.png)
 ![img] (https://raw.githubusercontent.com/grafke/AB_testing/master/plots/output_joint.png)
 * Closed form solution
-    "P(Test group is better that Control group) = 90%"
+   -Output: "P(Test group is better that Control group) = 90%"
 * Approximate closed form solution
-    "P(Test group is better that Control group) = 90%"
+   -Output: "P(Test group is better that Control group) = 90%"
 
 G test
 
