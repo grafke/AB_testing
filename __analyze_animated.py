@@ -14,11 +14,11 @@ base_neg = 13980139
 variant_pos = 2646705
 variant_neg = 13971736
 
-# 2 weeks in seconds
+# experiment duration seconds
 t = 1209600
 
 # interval seconds
-delta_t = 86400 / 12
+delta_t = 86400 / 1
 
 # data_buckets
 buckets = int(t / delta_t)
@@ -83,10 +83,11 @@ def main():
 
     ani = animation.ArtistAnimation(fig, ims, interval=200, blit=False, repeat_delay=3000)
 
-    Writer = animation.writers['ffmpeg']
+    #Writer = animation.writers['ffmpeg']
+    Writer = animation.writers['imagemagick']
     writer = Writer(metadata=dict(artist='Me'))
 
-    ani.save('plots/AB_animation.mp4', writer=writer)
+    ani.save('plots/AB_animation.gif', writer=writer)
 
     plt.show()
 
