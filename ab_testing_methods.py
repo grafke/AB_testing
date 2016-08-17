@@ -63,10 +63,67 @@ def visualize(normal_base_samples, normal_variant_samples, normal_delta_samples,
     # plt.show()
     plt.savefig(output)
 
-
-def analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=30000):
+def __analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=20000, burn=1000):
     """
-    Bayesian AB test using MCMC
+    Bayesian AB test using MCMC (PYMC2)
+    Slow with big numbers
+    Read more: http://nbviewer.jupyter.org/github/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers/blob/master/Chapter3_MCMC/Chapter3.ipynb
+
+    Use analyze_mcmc
+
+    :param base:
+    :param variant:
+    :param output:
+    :param num_samples:
+    :param burn:
+    :return:
+    """
+    import pymc as pm
+    base_pos = np.count_nonzero(base)
+    base_all = len(base)
+
+    variant_pos = np.count_nonzero(variant)
+    variant_all = len(variant)
+
+    p_A_n = pm.Uniform('p_A_n', lower=0, upper=1)
+    p_B_n = pm.Uniform('p_B_n', lower=0, upper=1)
+
+    p_A_b = pm.Beta('p_A_b', base_pos, base_all - base_pos)
+    p_B_b = pm.Beta('p_B_b', variant_pos, variant_all - variant_pos)
+
+    @pm.deterministic
+    def delta(p_A=p_A_n, p_B=p_B_n):
+        return p_B - p_A
+
+    @pm.deterministic
+    def beta_delta(p_A=p_A_b, p_B=p_B_b):
+        return p_B - p_A
+
+    obs_A = pm.Bernoulli("obs_A_n", p_A_n, value=base, observed=True)
+    obs_B = pm.Bernoulli("obs_B_n", p_B_n, value=variant, observed=True)
+
+    obs_A_b = pm.Bernoulli("obs_A_b", p_A_b, value=base, observed=True)
+    obs_B_b = pm.Bernoulli("obs_B_b", p_B_b, value=variant, observed=True)
+
+    mcmc = pm.MCMC([p_A_n, p_B_n, delta, obs_A, obs_B])
+    mcmc.sample(num_samples, burn)
+
+    mcmc_beta = pm.MCMC([p_A_b, p_B_b, beta_delta, obs_A_b, obs_B_b])
+    mcmc_beta.sample(num_samples, burn)
+
+    p_A_samples = mcmc.trace("p_A_n")[:]
+    p_B_samples = mcmc.trace("p_B_n")[:]
+    delta_samples = mcmc.trace("delta")[:]
+
+    p_A_b_samples = mcmc_beta.trace("p_A_b")[:]
+    p_B_b_samples = mcmc_beta.trace("p_B_b")[:]
+    beta_delta_samples = mcmc_beta.trace("beta_delta")[:]
+
+    visualize(p_A_samples, p_B_samples, delta_samples, p_A_b_samples, p_B_b_samples, beta_delta_samples, output)
+
+def analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=20000):
+    """
+    Bayesian AB test using MCMC (PYMC3)
     Slow with big numbers
     Read more: http://nbviewer.jupyter.org/github/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers/blob/master/Chapter3_MCMC/Chapter3.ipynb
 
@@ -88,7 +145,6 @@ def analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=300
         p_A_n = pm.Uniform('Uniform Base', lower=0, upper=1)
         p_B_n = pm.Uniform('Uniform Variant', lower=0, upper=1)
 
-        # Calculate delta from pA and pB
         delta = pm.Deterministic('delta', p_B_n - p_A_n)
 
         obs_A = pm.Bernoulli("obs_A_n", p_A_n, observed=base)
@@ -109,7 +165,6 @@ def analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=300
         p_A_b = pm.Beta('Beta Base', base_pos, base_all - base_pos)
         p_B_b = pm.Beta('Beta Variant', variant_pos, variant_all - variant_pos)
 
-        # Calculate delta from pA and pB
         beta_delta = pm.Deterministic('Beta delta', p_B_b - p_A_b)
 
         obs_A_b = pm.Bernoulli("obs_A_b", p_A_b, observed=base)
@@ -225,8 +280,9 @@ def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='
         min p
     :param maxp: float, optional
         max p
-    :return: float
-        probability that Test group is better that Control group.
+    :return: list(float, float)
+        [probability that Test group is better that Control group,
+        probability that Test group is worse that Control group]
     """
     import matplotlib.colors as colors
     fig, ax = plt.subplots(1, 1)
@@ -236,8 +292,11 @@ def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='
 
     joint = np.array([[i * j for i in variant_y] for j in base_x])
     joint_sum = np.sum(joint)
+
     sum_below_diagonal = np.sum([joint[x][y] for x in range(N) for y in range(N) if x < y])
+    sum_above_diagonal = np.sum([joint[x][y] for x in range(N) for y in range(N) if x > y])
     p_success = sum_below_diagonal / joint_sum
+    p_failure = sum_above_diagonal / joint_sum
 
     cmap = plt.cm.RdBu_r
     plt.imshow(joint, cmap=cmap, aspect='auto', interpolation='gaussian', alpha=0.2, extent=(minp, maxp, minp, maxp),
@@ -248,7 +307,7 @@ def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='
 
     plt.title('P(Test is better than Control) = %s%%' % (p_success * 100))
     plt.savefig(output)
-    return p_success
+    return p_success, p_failure
 
 
 def g_test(a, b, c, d):
