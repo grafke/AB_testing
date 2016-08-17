@@ -5,6 +5,8 @@ Bayesian A/B testing
 * Numerical integrating over joint distribution (see plots/output_joint.png)
   *Output: "P(Test group is better that Control group) = 97.9587576712%"
 ![img] (https://raw.githubusercontent.com/grafke/AB_testing/master/plots/output_joint.png)
+  (To-DO: animation)
+  
 * Closed form solution
   **Output: "P(Test group is better that Control group) = 97.9943832157%"
 * Approximate closed form solution
