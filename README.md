@@ -6,7 +6,6 @@ Bayesian A/B testing methods
   *Output: "P(Test group is better that Control group) = 97.9587576712%"
 ![img] (https://raw.githubusercontent.com/grafke/AB_testing/master/plots/output_joint.png)
   
-  (To-DO: animation)
 ![img] (https://raw.githubusercontent.com/grafke/AB_testing/master/plots/AB_animation.gif)
   
 * Closed form solution

@@ -6,8 +6,8 @@ from scipy.stats.distributions import chi2
 from scipy.stats import norm, beta
 
 
-def visualize(normal_base_samples, normal_variant_samples, normal_delta_samples, beta_base_samples,
-              beta_variant_samples, beta_delta_samples, output='plots/output.png'):
+def visualize_mcmc(normal_base_samples, normal_variant_samples, normal_delta_samples, beta_base_samples,
+                   beta_variant_samples, beta_delta_samples, output='plots/output.png'):
     fig = plt.figure(figsize=(10, 10))
 
     ax = fig.add_subplot(321)
@@ -119,7 +119,7 @@ def __analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=2
     p_B_b_samples = mcmc_beta.trace("p_B_b")[:]
     beta_delta_samples = mcmc_beta.trace("beta_delta")[:]
 
-    visualize(p_A_samples, p_B_samples, delta_samples, p_A_b_samples, p_B_b_samples, beta_delta_samples, output)
+    visualize_mcmc(p_A_samples, p_B_samples, delta_samples, p_A_b_samples, p_B_b_samples, beta_delta_samples, output)
 
 def analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=20000):
     """
@@ -180,8 +180,8 @@ def analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=200
 
         # axb = pm.traceplot(trace)
 
-    visualize(normal_base_data, normal_variant_data, delta_data, beta_base_data, beta_variant_data, beta_delta_data,
-              output)
+    visualize_mcmc(normal_base_data, normal_variant_data, delta_data, beta_base_data, beta_variant_data, beta_delta_data,
+                   output)
 
 
 def analyze_closed_form(base_pos, base_neg, variant_pos, variant_neg):
@@ -256,7 +256,22 @@ def analyze_sampl(base_pos, base_neg, variant_pos, variant_neg, N=1e6):
     return np.average(base_sim < variant_sim)
 
 
-def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='plots/output_joint.png', minp=None, maxp=None):
+def visualize_joint(joint_data, p_success, p_failure, plot_range, output='plots/output_joint.png'):
+    import matplotlib.colors as colors
+    fig, ax = plt.subplots(1, 1)
+
+    cmap = plt.cm.RdBu_r
+    plt.imshow(joint_data, cmap=cmap, aspect='auto', interpolation='gaussian', alpha=0.2, extent=plot_range,
+               norm=colors.PowerNorm(gamma=0.1))
+    ax.plot([0, 1], [0, 1], transform=ax.transAxes)
+    ax.set_xlabel('Test group, p')
+    ax.set_ylabel('Control group, p')
+
+    plt.title('P(Test is better than Control) = %s%%' % (p_success * 100))
+    plt.savefig(output)
+
+
+def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, make_plot=True, output='plots/output_joint.png', minp=None, maxp=None):
     """
     Bayesian AB test
     Read more: https://en.wikipedia.org/wiki/Joint_probability_distribution
@@ -284,13 +299,10 @@ def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='
         [probability that Test group is better that Control group,
         probability that Test group is worse that Control group]
     """
-    import matplotlib.colors as colors
-    fig, ax = plt.subplots(1, 1)
-
     if minp is None or maxp is None:
         m = beta.mean(base_pos, base_neg)
-        minp = round(m - (0.001 * m))
-        maxp = round(m + (0.001 * m))
+        minp = round(m - (0.01 * m), 3)
+        maxp = round(m + (0.01 * m), 3)
 
     base_x = [beta.pdf(i, base_pos+1, base_neg+1) for i in np.linspace(minp, maxp, N)]
     variant_y = [beta.pdf(i, variant_pos+1, variant_neg+1) for i in np.linspace(minp, maxp, N)]
@@ -303,16 +315,10 @@ def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='
     p_success = sum_below_diagonal / joint_sum
     p_failure = sum_above_diagonal / joint_sum
 
-    cmap = plt.cm.RdBu_r
-    plt.imshow(joint, cmap=cmap, aspect='auto', interpolation='gaussian', alpha=0.2, extent=(minp, maxp, minp, maxp),
-               norm=colors.PowerNorm(gamma=0.1))
-    ax.plot([0, 1], [0, 1], transform=ax.transAxes)  # diagonal
-    ax.set_xlabel('Test group, p')
-    ax.set_ylabel('Control group, p')
+    if make_plot:
+        visualize_joint(joint, p_success, p_failure, (minp, maxp, minp, maxp), output=output)
 
-    plt.title('P(Test is better than Control) = %s%%' % (p_success * 100))
-    plt.savefig(output)
-    return p_success, p_failure
+    return p_success, p_failure, joint, (minp, maxp, minp, maxp)
 
 
 def g_test(a, b, c, d):
