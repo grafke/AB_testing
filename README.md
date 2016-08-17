@@ -1,4 +1,4 @@
-Bayesian A/B testing
+Bayesian A/B testing methods
 
 * MCMC (slowest. Recommended for small numbers <1e5) (see see plots/output.png)
 ![img] (https://raw.githubusercontent.com/grafke/AB_testing/master/plots/output.png)
