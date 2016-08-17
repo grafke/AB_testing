@@ -59,7 +59,7 @@ def analyze_joint((base_pos, base_neg), (variant_pos, variant_neg), N=1024, minp
     return p_failure, p_success, joint, (minp, maxp, minp, maxp)
 
 
-def main():
+def main(output_format='gif'):
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 2, 1)
     ax2 = fig.add_subplot(1, 2, 2)
@@ -83,13 +83,16 @@ def main():
 
     ani = animation.ArtistAnimation(fig, ims, interval=200, blit=False, repeat_delay=3000)
 
-    #Writer = animation.writers['ffmpeg']
-    Writer = animation.writers['imagemagick']
-    writer = Writer(metadata=dict(artist='Me'))
-
-    ani.save('plots/AB_animation.gif', writer=writer)
-
-    plt.show()
+    if output_format == 'gif':
+        Writer = animation.writers['imagemagick']
+        writer = Writer(metadata=dict(artist='Me'))
+        ani.save('plots/AB_animation.gif', writer=writer)
+    elif output_format == 'mp4':
+        Writer = animation.writers['ffmpeg']
+        writer = Writer(metadata=dict(artist='Me'))
+        ani.save('plots/AB_animation.mp4', writer=writer)
+    else:
+        plt.show()
 
 
 if __name__ == '__main__':
