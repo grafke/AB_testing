@@ -256,7 +256,7 @@ def analyze_sampl(base_pos, base_neg, variant_pos, variant_neg, N=1e6):
     return np.average(base_sim < variant_sim)
 
 
-def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='plots/output_joint.png', minp=0, maxp=1):
+def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='plots/output_joint.png', minp=None, maxp=None):
     """
     Bayesian AB test
     Read more: https://en.wikipedia.org/wiki/Joint_probability_distribution
@@ -286,6 +286,11 @@ def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, output='
     """
     import matplotlib.colors as colors
     fig, ax = plt.subplots(1, 1)
+
+    if minp is None or maxp is None:
+        m = beta.mean(base_pos, base_neg)
+        minp = round(m - (0.001 * m))
+        maxp = round(m + (0.001 * m))
 
     base_x = [beta.pdf(i, base_pos+1, base_neg+1) for i in np.linspace(minp, maxp, N)]
     variant_y = [beta.pdf(i, variant_pos+1, variant_neg+1) for i in np.linspace(minp, maxp, N)]
