@@ -1,19 +1,28 @@
 Bayesian A/B testing methods
+=====================
+
+Quick and dirty Python code for evaluating AB tests
 
 * MCMC (slowest. Recommended for small numbers <1e5) (see see plots/output.png)
 ![img] (https://raw.githubusercontent.com/grafke/AB_testing/master/plots/output.png)
 * Numerical integrating over joint distribution (see plots/output_joint.png)
+
   *Output: "P(Test group is better that Control group) = 97.9587576712%"
+
 ![img] (https://raw.githubusercontent.com/grafke/AB_testing/master/plots/output_joint.png)
   
 ![img] (https://raw.githubusercontent.com/grafke/AB_testing/master/plots/AB_animation.gif)
   
 * Closed form solution
+
   **Output: "P(Test group is better that Control group) = 97.9943832157%"
+
 * Approximate closed form solution
+
   **Output: "P(Test group is better that Control group) = 97.9963126837%"
 
 G test
+  
   *Output "Test statistic = 95.99%"
   
   
