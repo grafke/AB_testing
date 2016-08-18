@@ -89,8 +89,8 @@ def __analyze_mcmc(base=[], variant=[], num_samples=20000, burn=1000, visualize=
     p_A_n = pm.Uniform('p_A_n', lower=0, upper=1)
     p_B_n = pm.Uniform('p_B_n', lower=0, upper=1)
 
-    p_A_b = pm.Beta('p_A_b', base_pos, base_all - base_pos)
-    p_B_b = pm.Beta('p_B_b', variant_pos, variant_all - variant_pos)
+    p_A_b = pm.Beta('p_A_b', base_pos + 1, base_all - base_pos + 1)
+    p_B_b = pm.Beta('p_B_b', variant_pos + 1, variant_all - variant_pos + 1)
 
     @pm.deterministic
     def delta(p_A=p_A_n, p_B=p_B_n):
@@ -181,8 +181,8 @@ def analyze_mcmc(base=[], variant=[], num_samples=20000, output='plots/output.pn
 
     # Model assuming Beta distributions
     with pm.Model() as beta_model:
-        p_A_b = pm.Beta('Beta Base', base_pos, base_all - base_pos)
-        p_B_b = pm.Beta('Beta Variant', variant_pos, variant_all - variant_pos)
+        p_A_b = pm.Beta('Beta Base', base_pos + 1, base_all - base_pos + 1)
+        p_B_b = pm.Beta('Beta Variant', variant_pos + 1, variant_all - variant_pos + 1)
 
         beta_delta = pm.Deterministic('Beta delta', p_B_b - p_A_b)
 
@@ -279,8 +279,8 @@ def analyze_sampl(base_pos, base_neg, variant_pos, variant_neg, N=1e6):
     :return: float
         probability that Test group is better that Control group.
     """
-    base_sim = np.random.beta(base_pos, base_neg, N)
-    variant_sim = np.random.beta(variant_pos, variant_neg, N)
+    base_sim = np.random.beta(base_pos + 1, base_neg + 1, N)
+    variant_sim = np.random.beta(variant_pos + 1, variant_neg + 1, N)
     return np.average(base_sim < variant_sim)
 
 
@@ -329,7 +329,7 @@ def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, make_plo
         probability that Test group is worse that Control group]
     """
     if minp is None or maxp is None:
-        m = beta.mean(base_pos, base_neg)
+        m = beta.mean(base_pos + 1, base_neg + 1)
         minp = round(m - (0.01 * m), 3)
         maxp = round(m + (0.01 * m), 3)
 
