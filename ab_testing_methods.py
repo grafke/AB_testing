@@ -63,13 +63,14 @@ def visualize_mcmc(normal_base_samples, normal_variant_samples, normal_delta_sam
     # plt.show()
     plt.savefig(output)
 
-def __analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=20000, burn=1000):
+
+def __analyze_mcmc(base=[], variant=[], num_samples=20000, burn=1000, visualize=True, output='plots/output.png'):
     """
     Bayesian AB test using MCMC (PYMC2)
     Slow with big numbers
     Read more: http://nbviewer.jupyter.org/github/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers/blob/master/Chapter3_MCMC/Chapter3.ipynb
 
-    Use analyze_mcmc
+    ||Use analyze_mcmc()||
 
     :param base:
     :param variant:
@@ -119,18 +120,36 @@ def __analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=2
     p_B_b_samples = mcmc_beta.trace("p_B_b")[:]
     beta_delta_samples = mcmc_beta.trace("beta_delta")[:]
 
-    visualize_mcmc(p_A_samples, p_B_samples, delta_samples, p_A_b_samples, p_B_b_samples, beta_delta_samples, output)
+    if visualize:
+        visualize_mcmc(p_A_samples, p_B_samples, delta_samples, p_A_b_samples, p_B_b_samples, beta_delta_samples,
+                       output)
 
-def analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=20000):
+    p_success_uniform = (delta_samples > 0).mean()
+    p_failure_uniform = (delta_samples < 0).mean()
+    p_success_beta = (beta_delta_samples > 0).mean()
+    p_failure_beta = (beta_delta_samples < 0).mean()
+
+    return p_success_uniform, p_failure_uniform, p_success_beta, p_failure_beta
+
+
+def analyze_mcmc(base=[], variant=[], num_samples=20000, output='plots/output.png', visualize=True):
     """
     Bayesian AB test using MCMC (PYMC3)
     Slow with big numbers
     Read more: http://nbviewer.jupyter.org/github/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers/blob/master/Chapter3_MCMC/Chapter3.ipynb
 
-    :param base: control group outcomes [0, 1, 0, 0]
-    :param variant: test group outcomes [0, 1, 0, 0]
-    :param output: filename to save the plots
-    :param num_samples: number of samples to draw using MCMC
+    :param base: list
+        control group outcomes [0, 1, 0, 0]
+    :param variant: list
+        test group outcomes [0, 1, 0, 0]
+    :param num_samples: int, optional
+        number of samples to draw using MCMC, default: 20000
+    :param output: string, optional
+        filename to save the plots, default: 'plots/output.png'
+    :param visualize: boolean, optional
+        default: True
+    :return list
+        [p_success_uniform, p_failure_uniform, p_success_beta, p_failure_beta]
     """
     import pymc3 as pm
 
@@ -180,8 +199,17 @@ def analyze_mcmc(base=[], variant=[], output='plots/output.png', num_samples=200
 
         # axb = pm.traceplot(trace)
 
-    visualize_mcmc(normal_base_data, normal_variant_data, delta_data, beta_base_data, beta_variant_data, beta_delta_data,
-                   output)
+    p_success_uniform = (delta_data > 0).mean()
+    p_failure_uniform = (delta_data < 0).mean()
+    p_success_beta = (beta_delta_data > 0).mean()
+    p_failure_beta = (beta_delta_data < 0).mean()
+
+    if visualize:
+        visualize_mcmc(normal_base_data, normal_variant_data, delta_data, beta_base_data, beta_variant_data,
+                       beta_delta_data,
+                       output)
+
+    return p_success_uniform, p_failure_uniform, p_success_beta, p_failure_beta
 
 
 def analyze_closed_form(base_pos, base_neg, variant_pos, variant_neg):
@@ -271,7 +299,8 @@ def visualize_joint(joint_data, p_success, p_failure, plot_range, output='plots/
     plt.savefig(output)
 
 
-def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, make_plot=True, output='plots/output_joint.png', minp=None, maxp=None):
+def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, make_plot=True, output='plots/output_joint.png',
+                  minp=None, maxp=None):
     """
     Bayesian AB test
     Read more: https://en.wikipedia.org/wiki/Joint_probability_distribution
@@ -304,8 +333,8 @@ def analyze_joint(base_pos, base_neg, variant_pos, variant_neg, N=1024, make_plo
         minp = round(m - (0.01 * m), 3)
         maxp = round(m + (0.01 * m), 3)
 
-    base_x = [beta.pdf(i, base_pos+1, base_neg+1) for i in np.linspace(minp, maxp, N)]
-    variant_y = [beta.pdf(i, variant_pos+1, variant_neg+1) for i in np.linspace(minp, maxp, N)]
+    base_x = [beta.pdf(i, base_pos + 1, base_neg + 1) for i in np.linspace(minp, maxp, N)]
+    variant_y = [beta.pdf(i, variant_pos + 1, variant_neg + 1) for i in np.linspace(minp, maxp, N)]
 
     joint = np.array([[i * j for i in variant_y] for j in base_x])
     joint_sum = np.sum(joint)

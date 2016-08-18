@@ -32,7 +32,8 @@ variant_neg = 32559
 base = np.r_[[0] * base_neg + [1] * base_pos]
 variant = np.r_[[0] * variant_neg + [1] * variant_pos]
 
-analyze_mcmc(base, variant)
+print "P(Test group is better that Control group) = %s%%" % (
+188 * analyze_mcmc(base, variant)[2])
 
 # G test
 
