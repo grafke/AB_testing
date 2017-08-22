@@ -5,7 +5,41 @@ from scipy.special._ufuncs import betaln
 from scipy.stats.distributions import chi2
 from scipy.stats import norm, beta
 
+def ci_interval(base_reach, base_visitors, variant_reach, variant_visitors, CI=0.95, interval="two-sided", e=0.5):
+    """
+    Confidence interval of the lift of the two campaigns
+    http://ilpubs.stanford.edu:8090/993/2/displayadinfluenceTR.pdf
 
+    base_reach is the total reach for campaign A,
+    base_visitors is the total visitors for campaign A,
+    etc.
+    """
+    # lift of B over A
+    if interval not in ("two-sided", "upper", "lower"):
+        raise ValueError("Interval must be either 'two-sided', 'upper', or 'lower'.")
+    # add e to each number to keep weird stuff from happening when Pa or Pb are close to 0
+    base_reach += e
+    base_visitors += e
+    variant_reach += e
+    variant_visitors += e
+    log_lift_mean = math.log((float(variant_visitors) / variant_reach) / (float(base_visitors) / base_reach))
+    # if the interval is two-sided then the tail probabilities are cut in half
+    pval = (1.0 - CI) / 2 if interval == "two-sided" else (1.0 - CI)
+    zval = norm.ppf(1.0 - pval)
+    try:
+        se = math.sqrt((1.0 / variant_visitors) - (1.0 / variant_reach) + (1.0 / base_visitors) - (1.0 / base_reach))
+    except ValueError as e:
+        sys.stderr.write('Invalid reach: %s, %s, %s, %s' % (base_reach, base_visitors, variant_reach, variant_visitors))
+        return (-1.0, float("inf"))
+    # return a tuple of (lower_limit, upper_limit)
+    return (
+        -1.0 if interval == "lower" else math.exp(
+            log_lift_mean - zval * se) - 1,
+        float("inf") if interval == "upper" else math.exp(
+            log_lift_mean + zval * se) - 1
+    )
+  
+  
 def visualize_mcmc(normal_base_samples, normal_variant_samples, normal_delta_samples, beta_base_samples,
                    beta_variant_samples, beta_delta_samples, output='plots/output.png'):
     fig = plt.figure(figsize=(10, 10))
